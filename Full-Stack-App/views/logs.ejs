@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Control LED light</title>
+  <link rel="stylesheet" href="/logs.css">
+  <link rel="stylesheet" href="/base.css">
+  <link rel="stylesheet" href="/globalStyles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.1/dist/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"></script>
+</head>
+<body>
+  <main>
+    <header class="side-bar__left">
+      <div class="logo-container">
+        <img src="assets/PepeLaugh.png" alt="">
+      </div>
+      <nav class="nav__left">
+        <a id="logs" class="link" href="/logs">
+          <div class="icon__left">
+            <img src="assets/list-solid.png" alt="">
+          </div>
+          <p>Logs</p>
+        </a>
+        <a id="manage_users" class="link" href="/manage_users">
+          <div class="icon__left">
+            <img src="assets/users-solid.png" alt="">
+          </div>
+          <p>Manage Users</p>
+        </a>
+      </nav>
+      <a id="settings" class="link" href="/settings">
+        <div class="icon__left">
+          <img src="assets/gear-solid.png" alt="">
+        </div>
+        <p>Settings</p>
+      </a>
+    </header>
+    <section class="main__content-container">
+      <header class="main__header">
+        <div class="button">
+          <p>Detection:</p>
+          <label class="switch">
+            <input type="checkbox" id="light">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="user">
+          <div class="dropdown">
+            <button id="usernameBtn" class="dropbtn"><%= username %> &#x25BE;</button>
+            <div class="dropdown-content">
+              <a href="/logout">Logout</a>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="main__content">
+        <div class="select-toggle">
+          <button id="detection" class="toggle-split active">Detection</button>
+          <button id="user" class="toggle-split">User</button>
+          <div class="toggle-slider"></div>
+        </div>
+        <div class="page-content">
+
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="detection.js"></script>
+  <script src="logs.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+/* Select */
+.main__content {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.select-toggle {
+  width: 20%;
+  font-size: 3.2rem;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.toggle-split {
+  all: unset;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  width: 50%;
+  height: 6px;
+  bottom: 0;
+  left: 0;
+  background-color: magenta;
+  transition: transform 0.2s ease-in-out;
+}
+
+.move {
+  transform: translateX(100%);
+}
+
+/* Log */
+.page-content {
+  width: 60%;
+  height: 600px;
+  overflow-y: auto;
+}
+
+table {
+  font-size: 1.8rem;
+}
+
+#log {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+#log thead th {
+  background-color: #f0f0f0;
+  padding: 10px;
+  text-align: left;
+}
+
+#log tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+#log tbody tr:last-child td {
+  border-bottom: none;
+}
+
+#log tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+#log tbody tr:hover {
+  background-color: #f0f0f0;
+}
+
+/* Chart */
+.chart-container {
+  width: 70%;
+  height: 70%;
+}
+
+.chartjs-tooltip {
+  color: white;
+  padding: 5px;
+  border-radius: 3px;
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+.chartjs-tooltip-key {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  background-color: blue;
+}
