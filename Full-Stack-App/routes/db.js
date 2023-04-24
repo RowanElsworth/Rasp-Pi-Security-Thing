@@ -1,40 +1,30 @@
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 
-const uri = process.env.DB_URI;
-
-const connectToDatabase = async () => {
-  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const connectDB = async (operation) => {
   try {
-    await client.connect();
-    console.log('Connected to MongoDB');
-    return client;
+    await mongoose.connect(process.env.DB_URI, {
+      dbName: 'security-db',
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    console.log(`Connected to MongoDB | ${operation}`);
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
     throw error;
   }
 };
 
-async function insertData(client, collectionName, data) {
-  const database = client.db('security-db');
-  const collection = database.collection(collectionName);
-
+const disconnectDB = async (operation) => {
   try {
-    const result = await collection.insertOne(data);
-    console.log('Data inserted:', result.insertedId);
-  } catch (err) {
-    console.error(err);
+    await mongoose.connection.close();
+    console.log(`Disconnected from MongoDB | ${operation}`);
+  } catch (error) {
+    console.error('Error connecting to MongoDB:', error);
+    throw error;
   }
-}
-
-// close the MongoDB client connection
-const closeDatabaseConnection = () => {
-  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-  client.close();
-  console.log('MongoDB client connection closed');
 };
 
 module.exports = {
-  connectToDatabase,
-  insertData,
-  closeDatabaseConnection,
+  connectDB,
+  disconnectDB
 };

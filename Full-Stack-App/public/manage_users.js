@@ -1,4 +1,11 @@
 $(document).ready(function() {
+  // Get the saved mode from local storage
+  var savedMode = localStorage.getItem('mode');
+
+  // Check if dark mode is saved, and update the body class accordingly
+  if (savedMode === 'dark') {
+    $('body').addClass('dark-mode');
+  }
   const updateUserList = () => {
     $.ajax({
       url: '/users',
@@ -12,7 +19,7 @@ $(document).ready(function() {
           const userNameCell = $('<td>').text(user.username);
           const passwordCell = $('<td>');
           const resetPasswordWrapper = $('<div>').css('position', 'relative');
-          const resetPasswordButton = $('<button>').text('Reset Password');
+          const resetPasswordButton = $('<button>').text('Reset Password').css('font-size', '1.8rem');
           resetPasswordButton.on('click', function() {
             // Open a popup for changing password
             const newPassword = prompt('Enter new password for user ' + user.username + ':');

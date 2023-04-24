@@ -1,3 +1,17 @@
+:root {
+  --log-head: #f0f0f0;
+  --log-body: #ddd;
+  --log-body-even: #f9f9f9;
+  --log-body-hvr: #f0f0f0;
+}
+
+.dark-mode {
+  --log-head: #969696;
+  --log-body: #ddd;
+  --log-body-even: #aaaaaa;
+  --log-body-hvr: #b99f9f;
+}
+
 .main__content {
   display: flex;
   align-items: center;
@@ -21,14 +35,16 @@ table {
 }
 
 #users thead th {
-  background-color: #f0f0f0;
+  background-color: var(--log-head);
   padding: 10px;
   text-align: left;
+  font-size: 2.2rem;
 }
 
 #users tbody td {
   padding: 10px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--log-body);
+  font-size: 1.8rem;
 }
 
 #users tbody tr:last-child td {
@@ -36,11 +52,17 @@ table {
 }
 
 #users tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: var(--log-body-even);
 }
 
 #users tbody tr:hover {
-  background-color: #f0f0f0;
+  background-color: var(--log-body-hvr);
+}
+
+#add-user-button {
+  width: 100%;
+  font-size: 2rem;
+  padding: 5px 0;
 }
 
 /* Pop up box */

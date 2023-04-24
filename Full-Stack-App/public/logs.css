@@ -1,3 +1,17 @@
+:root {
+  --log-head: #f0f0f0;
+  --log-body: #ddd;
+  --log-body-even: #f9f9f9;
+  --log-body-hvr: #f0f0f0;
+}
+
+.dark-mode {
+  --log-head: #969696;
+  --log-body: #ddd;
+  --log-body-even: #aaaaaa;
+  --log-body-hvr: #b99f9f;
+}
+
 /* Select */
 .main__content {
   display: flex;
@@ -53,14 +67,16 @@ table {
 }
 
 #log thead th {
-  background-color: #f0f0f0;
+  background-color: var(--log-head);
   padding: 10px;
   text-align: left;
+  font-size: 2.2rem;
 }
 
 #log tbody td {
   padding: 10px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--log-body);
+  font-size: 1.8rem;
 }
 
 #log tbody tr:last-child td {
@@ -68,11 +84,11 @@ table {
 }
 
 #log tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: var(--log-body-even);
 }
 
 #log tbody tr:hover {
-  background-color: #f0f0f0;
+  background-color: var(--log-body-hvr);
 }
 
 /* Chart */

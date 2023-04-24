@@ -1,5 +1,12 @@
 
 $(document).ready(function() {
+  // Get the saved mode from local storage
+  var savedMode = localStorage.getItem('mode');
+
+  // Check if dark mode is saved, and update the body class accordingly
+  if (savedMode === 'dark') {
+    $('body').addClass('dark-mode');
+  }
   // Fetch the detection log data
   const updateDetectionLog = () => {
     $.ajax({
@@ -13,13 +20,22 @@ $(document).ready(function() {
       for (let i = 0; i < log.length; i++) {
         const logRow = $('<tr></tr>');
         const logNumberCell = $('<td></td>').text(log.length - i);
-        const timeCell = $('<td></td>').text(log[i].time);
+        const formattedTime = new Date(log[i].time).toLocaleString('en-GB', {
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric',
+          day: 'numeric',
+          month: 'numeric',
+          year: 'numeric'
+        });
+        const timeCell = $('<td></td>').text(formattedTime);
+        const messageCell = $('<td></td>').text(log[i].message);
         logRow.append(logNumberCell);
         logRow.append(timeCell);
         logTable.append(logRow);
       }
     });
-  }
+  };  
 
   // Fetch the user log data
   const updateUserLog = () => {
@@ -35,7 +51,15 @@ $(document).ready(function() {
         const userActionsRow = $('<tr></tr>');
         const logNumberCell = $('<td></td>').text(userActions.length - i);
         const userCell = $('<td></td>').text(userActions[i].username);
-        const timeCell = $('<td></td>').text(userActions[i].time);
+        const formattedTime = new Date(userActions[i].time).toLocaleString('en-GB', {
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric',
+          day: 'numeric',
+          month: 'numeric',
+          year: 'numeric'
+        });
+        const timeCell = $('<td></td>').text(formattedTime);
         const actionCell = $('<td></td>').text(userActions[i].action);
         const ipCell = $('<td></td>').text(userActions[i].ip);
         userActionsRow.append(logNumberCell);
@@ -48,7 +72,7 @@ $(document).ready(function() {
     }).fail((error) => {
       console.error('Error fetching user actions:', error);
     });
-  }
+  }  
 
   // Update the page content depending on the active page
   const updatePage = () => {

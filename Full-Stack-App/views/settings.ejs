@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Control LED light</title>
+  <title>Amazingly Sensational Security Breach and Egregious Emergency Protocol Service | Settings</title>
   <link rel="stylesheet" href="/settings.css">
   <link rel="stylesheet" href="/base.css">
   <link rel="stylesheet" href="/globalStyles.css">
@@ -22,27 +22,15 @@
           </div>
           <p>Logs</p>
         </a>
-        <a id="schedule" class="link" href="/schedule">
-          <div class="icon__left">
-            <img src="assets/calendar-regular.png" alt="">
-          </div>
-          <p>Schedule</p>
-        </a>
         <a id="manage_users" class="link" href="/manage_users">
           <div class="icon__left">
             <img src="assets/users-solid.png" alt="">
           </div>
           <p>Manage Users</p>
         </a>
-        <a id="analytics" class="link" href="/analytics">
-          <div class="icon__left">
-            <img src="assets/chart-pie-solid.png" alt="">
-          </div>
-          <p>Analytics</p>
-        </a>
       </nav>
-      <a id="settings" class="link" href="/settings">
-        <div class="icon__left">
+      <a id="settings" class="link page" href="/settings">
+        <div class="icon__left active">
           <img src="assets/gear-solid.png" alt="">
         </div>
         <p>Settings</p>
@@ -59,7 +47,7 @@
         </div>
         <div class="user">
           <div class="dropdown">
-            <button class="dropbtn">Username &#x25BE;</button>
+            <button id="usernameBtn" class="dropbtn"><%= username %> &#x25BE;</button>
             <div class="dropdown-content">
               <a href="/logout">Logout</a>
             </div>
@@ -67,7 +55,16 @@
         </div>
       </header>
       <div class="main__content">
-        
+        <div class="page-content">
+          <div>
+            <p id="darkModeText">Dark mode: Off</p>
+            <button id="darkModeToggle">Toggle Dark Mode</button>
+          </div>
+          <div>
+            <p id="specialModeText">Special mode: Off</p>
+            <button id="specialModeToggle">Toggle Special Mode</button>
+          </div>
+        </div>
       </div>
     </section>
   </main>

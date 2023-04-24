@@ -4,11 +4,10 @@ const http = require('http');
 const socketIO = require('socket.io');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
-const { ObjectId } = require('mongodb');
 const session = require('express-session');
+const mongoose = require('mongoose');
 
-const { connectToDatabase, insertData, closeDatabaseConnection } = require('./routes/db');
-const { authenticateUser } = require('./routes/auth')
+const { connectDB, disconnectDB } = require('./routes/db');
 
 const app = express();
 const server = http.createServer(app);
@@ -39,187 +38,189 @@ app.use(session({
   saveUninitialized: false
 }));
 
-// Authentication middleware
-const authenticateMiddleware = async (req, res, next) => {
-  try {
-    // Check if user is authenticated
-    const { username, password } = req.session;
-    // Skip authorization check for /login route
-    if (req.path === '/login') {
-      next();
-      return;
-    }
-    const user = await authenticateUser(username, password);
-    if (user) {
-      // User is authenticated, continue to the next middleware or route handler
-      next();
-    } else {
-      // User is not authenticated, redirect to login page or send unauthorized response
-      res.redirect('/login');
-    }
-  } catch (error) {
-    console.error('Error during authentication:', error);
-    res.status(500).send('An error occurred during authentication.');
+// middleware to check if the user is authenticated
+function isAuthenticated(req, res, next) {
+  if (req.session.user) {
+    // user is authenticated, continue with the request
+    res.locals.username = req.session.user.username; // set username variable for views
+    next();
+  } else {
+    // user is not authenticated, redirect to login page
+    res.redirect('/login');
   }
-};
+}
 
-// Use authentication middleware for all routes
-app.use(authenticateMiddleware);
-
-// Middleware to make username available in all routes
+// apply the isAuthenticated middleware to all routes except the login route
 app.use((req, res, next) => {
-  res.locals.username = req.session.username || '';
-  next();
+  if (req.path === '/login') {
+    // don't apply the middleware to the login route
+    next();
+  } else {
+    isAuthenticated(req, res, next);
+  }
 });
 
-// Logout endpoint
+// For authentication
+const User = mongoose.model('User', new mongoose.Schema({
+  username: String,
+  password: String
+}, { collection: 'users' }));
+
+// handle login post request
+app.post('/login', async (req, res) => {
+  // connect to the database
+  await connectDB('Login post request');
+
+  // find a user with the provided username
+  const user = await User.findOne({ username: req.body.username });
+
+  // check if a user was found
+  if (user) {
+    // compare the hashed password in the database with the provided password
+    const match = await bcrypt.compare(req.body.password, user.password);
+    if (match) {
+      req.session.user = user;
+      await disconnectDB('Login post request');
+      res.redirect('/logs');
+    } else {
+      await disconnectDB('Login post request');
+      res.status(401).send('Invalid credentials');
+    }
+  } else {
+    await disconnectDB('Login post request');
+    res.status(401).send('Invalid credentials');
+  }
+});
+
 app.get('/logout', (req, res) => {
-  // Destroy session to log out the user
   req.session.destroy((err) => {
     if (err) {
-      console.error('Error during logout:', err);
+      console.log(err);
+    } else {
+      res.redirect('/login');
     }
-    // Redirect to login page after logout
-    res.redirect('/login');
   });
 });
 
-// Login endpoint
-app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  // Authenticate user
-  const user = await authenticateUser(username, password);
-  if (user) {
-    // Set session data
-    req.session.username = username;
-    req.session.password = password;
 
-    // Set username as global variable
-    app.locals.username = username;
-    res.redirect('/logs');
-  } else {
-    // Redirect to login page with error message
-    res.redirect('/login?error=1');
-  }
-});
+// Logs to frontend
+const logSchema = new mongoose.Schema({
+  time: Date
+}, { collection: 'log' });
 
-// Endpoint to log user actions
-app.route('/user-actions')
-  .get(async (req, res) => {
-    try {
-      // Retrieve user actions data from MongoDB
-      const client = await connectToDatabase();
-      const collection = client.db('security-db').collection('user-actions');
-      const userActions = await collection.find().toArray();
-      res.status(200).json(userActions);
-      closeDatabaseConnection();
-    } catch (error) {
-      console.error('Error retrieving user actions:', error);
-      res.status(500).json({ error: 'Failed to retrieve user actions.' });
-      closeDatabaseConnection();
-    }
-  })
-  .post(async (req, res) => {
-    try {
-      const username = req.session.username;
-      const action = req.body;
-    
-      // Insert action data into MongoDB
-      const client = await connectToDatabase();
-      const collection = client.db('security-db').collection('user-actions');
-      await collection.insertOne({
-        username: username,
-        action: action.action,
-        time: new Date().toLocaleString(),
-        ip: req.ip
-      });
-    
-      res.status(200).json({ message: 'User action logged successfully.' });
-      closeDatabaseConnection();
-    } catch (error) {
-      console.error('Error logging user action:', error);
-      res.status(500).json({ error: 'Failed to log user action.' });
-      closeDatabaseConnection();
-    }
-  });
+const Log = mongoose.model('Log', logSchema);
 
-// Routes
 app.get('/log', async (req, res) => {
+  await connectDB('Get logs request');
   try {
-    const client = await connectToDatabase();
-    const collection = client.db('security-db').collection('log');
-    const logs = await collection.find().toArray();
-    res.json(logs);
-    closeDatabaseConnection();
+    const log = await Log.find().exec();
+    await disconnectDB('Get logs request');
+    res.json(log);
   } catch (error) {
-    console.error('Error retrieving data from MongoDB:', error);
-    res.status(500).send('An error occurred while retrieving log data.');
-    closeDatabaseConnection();
+    console.error('Error retrieving log data', error);
+    await disconnectDB('Get logs request');
+    res.status(500).send('Error retrieving log data');
   }
 });
 
-const saltRounds = 10;
-app.route('/users')
-  .get(async (req, res) => {
-    try {
-      const client = await connectToDatabase();
-      const collection = client.db('security-db').collection('users');
-      const users = await collection.find().toArray();
-      res.json(users);
-      closeDatabaseConnection();
-    } catch (error) {
-      console.error('Error retrieving data from MongoDB:', error);
-      res.status(500).send('An error occurred while retrieving users data.');
-      closeDatabaseConnection();
+const userLogSchema = new mongoose.Schema({
+  username: String,
+  action: String,
+  time: Date,
+  ip: String
+}, { collection: 'user-actions' });
+
+const UserLog = mongoose.model('UserLog', userLogSchema);
+
+app.get('/user-actions', async (req, res) => {
+  await connectDB('Get user logs request');
+  try {
+    const userLog = await UserLog.find().exec();
+    await disconnectDB('Get logs request');
+    res.json(userLog);
+  } catch (error) {
+    console.error('Error retrieving log data', error);
+    await disconnectDB('Get user logs request');
+    res.status(500).send('Error retrieving log data');
+  }
+});
+
+app.get('/user-actions', async (req, res) => {
+  await connectDB('Get user logs request');
+  try {
+    const userLog = await UserLog.find().exec();
+    await disconnectDB('Get user logs request');
+    res.json(userLog);
+  } catch (error) {
+    console.error('Error retrieving log data', error);
+    await disconnectDB('Get user logs request');
+    res.status(500).send('Error retrieving log data');
+  }
+});
+
+app.get('/users', async (req, res) => {
+  await connectDB('Get users request');
+  try {
+    const users = await User.find();
+    await disconnectDB('Get users request');
+    res.json(users);
+  } catch (error) {
+    console.error('Error retrieving log data', error);
+    await disconnectDB('Get users request');
+    res.status(500).send('Error retrieving log data');
+  }
+});
+
+app.post('/users', async (req, res) => {
+  const { username, password } = req.body;
+  await connectDB('Add user request');
+  try {
+    // Check if user already exists
+    const user = await User.findOne({ username });
+    if (user) {
+      await disconnectDB('Add user request');
+      return res.status(409).send('User already exists');
     }
-  })
-  .post(async (req, res) => {
-    try {
-      // Extract user data from request body
-      const { username, password } = req.body;
 
-      // Hash password using bcrypt
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // Hash password with bcrypt
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-      // Insert user data into database
-      const client = await connectToDatabase();
-      const collection = client.db('security-db').collection('users');
-      await collection.insertOne({ username, password: hashedPassword });
+    // Create new user with hashed password
+    const newUser = new User({ username, password: hashedPassword });
+    await newUser.save();
+    await disconnectDB('Add user request');
+    res.status(201).send('User added successfully');
+  } catch (error) {
+    console.error('Error adding user', error);
+    await disconnectDB('Add user request');
+    res.status(500).send('Error adding user');
+  }
+});
 
-      // Return success response
-      res.status(201).send('User added successfully.');
-      closeDatabaseConnection();
-    } catch (error) {
-      console.error('Error adding user to MongoDB:', error);
-      res.status(500).send('An error occurred while adding user data.');
-      closeDatabaseConnection();
+app.put('/users/:id/password', async (req, res) => {
+  await connectDB('Change user password request');
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      await disconnectDB('Change user password request');
+      return res.status(404).send('User not found');
     }
-  });
-
-app.route('/users/:id/password')
-  .put(async (req, res) => {
-    try {
-      // Extract user ID and new password from request parameters and body
-      const userId = req.params.id;
-      const { password } = req.body;
-
-      // Hash new password using bcrypt
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-      // Update user password in the database
-      const client = await connectToDatabase();
-      const collection = client.db('security-db').collection('users');
-      await collection.updateOne({ _id: new ObjectId(userId) }, { $set: { password: hashedPassword } });
-
-      // Return success response
-      res.status(200).send('Password updated successfully.');
-      closeDatabaseConnection();
-    } catch (error) {
-      console.error('Error updating user password in MongoDB:', error);
-      res.status(500).send('An error occurred while updating user password.');
-      closeDatabaseConnection();
-    }
-  });
+    
+    const newPassword = req.body.password;
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    
+    user.password = hashedPassword;
+    await user.save();
+    await disconnectDB('Change user password request');
+    res.send('Password changed successfully');
+  } catch (error) {
+    console.error('Error changing password', error);
+    await disconnectDB('Change user password request');
+    res.status(500).send('Error changing password');
+  }
+});
 
 app.post('/light', (req, res) => {
   // Emit a Socket.IO event to Raspberry Pi
@@ -268,7 +269,19 @@ app.get('/manage_users', async (req, res) => {
   res.render('manage_users', { username: res.locals.username });
 });
 
-// Start the server
-server.listen(process.env.PORT, () => {
-  console.log(`Server is hosted at http://localhost:${process.env.PORT}/`);
+app.get('/settings', async (req, res) => {
+  res.render('settings', { username: res.locals.username });
 });
+
+// Start the server
+connectDB('Starting the server')
+  .then(() => {
+    app.listen(process.env.PORT, () => {
+      disconnectDB('Starting the server');
+      console.log(`Server is hosted at http://localhost:${process.env.PORT}/`);
+    });
+  })
+  .catch((err) => {
+    disconnectDB('Starting the server');
+    console.log(`Failed to connect to database: ${err}`);
+  });
