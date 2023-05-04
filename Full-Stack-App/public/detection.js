@@ -30,9 +30,7 @@ $(document).ready(function() {
   
   document.getElementById('light').addEventListener('change', function() {
     let isChecked = this.checked;
-      var action = {
-      action: this.checked ? 'Activated detection' : 'Deactivated detection'
-    };
+      var action = this.checked ? 'Activated detection' : 'Deactivated detection';
     $.ajax({
       url: '/light',
       method: 'POST',
@@ -40,19 +38,22 @@ $(document).ready(function() {
       data: JSON.stringify({ checked: isChecked }),
       success: function() {
         console.log('Click sent to backend');
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/user-actions", true);
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+        $.ajax({
+          url: '/user-actions',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ action }),
+          success: function() {
             console.log('User action logged successfully.');
-          }
-        };
-        xhr.send(JSON.stringify(action));
+          },
+          error: function(err) {
+            console.error('Error logging user action: ', err);
+          },
+        });
       },
       error: function(err) {
         console.error('Error sending click to backend: ', err);
       },
-    });
+    });    
   });
 });

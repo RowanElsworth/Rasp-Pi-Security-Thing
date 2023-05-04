@@ -12,28 +12,15 @@ $(document).ready(function() {
     $.ajax({
       url: '/log',
       dataType: 'json'
-    }).done((log) => {
-      // Display the log data on the page
-      const logTable = $('#log tbody');
-      // Sort the log data array in descending order based on time
-      log.sort((a, b) => new Date(b.time) - new Date(a.time));
-      for (let i = 0; i < log.length; i++) {
-        const logRow = $('<tr></tr>');
-        const logNumberCell = $('<td></td>').text(log.length - i);
-        const formattedTime = new Date(log[i].time).toLocaleString('en-GB', {
-          hour: 'numeric',
-          minute: 'numeric',
-          second: 'numeric',
-          day: 'numeric',
-          month: 'numeric',
-          year: 'numeric'
-        });
-        const timeCell = $('<td></td>').text(formattedTime);
-        const messageCell = $('<td></td>').text(log[i].message);
-        logRow.append(logNumberCell);
-        logRow.append(timeCell);
-        logTable.append(logRow);
-      }
+    }).done((logs) => {
+      logs = logs.sort((a, b) => new Date(a.time) - new Date(b.time)).reverse();
+      const tableRows = logs.map((log, index) => `
+        <tr>
+          <td>${logs.length - index}</td>
+          <td>${log.time}</td>
+        </tr>
+      `);
+      document.querySelector('tbody').innerHTML = tableRows.join('');
     });
   };  
 
@@ -43,36 +30,22 @@ $(document).ready(function() {
       url: '/user-actions',
       dataType: 'json'
     }).done((userActions) => {
-      // Display the user actions data on the page
-      const userActionsTable = $('#log tbody');
-      // Sort the user actions data array in descending order based on time
-      userActions.sort((a, b) => new Date(b.time) - new Date(a.time));
-      for (let i = 0; i < userActions.length; i++) {
-        const userActionsRow = $('<tr></tr>');
-        const logNumberCell = $('<td></td>').text(userActions.length - i);
-        const userCell = $('<td></td>').text(userActions[i].username);
-        const formattedTime = new Date(userActions[i].time).toLocaleString('en-GB', {
-          hour: 'numeric',
-          minute: 'numeric',
-          second: 'numeric',
-          day: 'numeric',
-          month: 'numeric',
-          year: 'numeric'
-        });
-        const timeCell = $('<td></td>').text(formattedTime);
-        const actionCell = $('<td></td>').text(userActions[i].action);
-        const ipCell = $('<td></td>').text(userActions[i].ip);
-        userActionsRow.append(logNumberCell);
-        userActionsRow.append(userCell);
-        userActionsRow.append(timeCell);
-        userActionsRow.append(actionCell);
-        userActionsRow.append(ipCell);
-        userActionsTable.append(userActionsRow);
-      }
+      userActions = userActions.sort((a, b) => new Date(a.time) - new Date(b.time)).reverse();
+      const tableRows = userActions.map((log, index) => `
+        <tr>
+          <td>${userActions.length - index}</td>
+          <td>${log.username}</td>
+          <td>${log.time}</td>
+          <td>${log.action}</td>
+          <td>${log.ip}</td>
+        </tr>
+      `);
+      document.querySelector('tbody').innerHTML = tableRows.join('');
     }).fail((error) => {
       console.error('Error fetching user actions:', error);
     });
-  }  
+  };
+
 
   // Update the page content depending on the active page
   const updatePage = () => {

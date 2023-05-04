@@ -29,6 +29,7 @@ const LED_PIN_1 = 4;
 const LED_PIN_2 = 18;
 const PUSH_BUTTON_PIN = 17;
 const PIR_PIN = 27;
+const BZR_PIN = 21;
 
 // Detection
 class DetectionState {
@@ -52,49 +53,13 @@ class DetectionState {
 
 const detectionState = new DetectionState();
 
-console.log(detectionState.getDetectionState());
-
-
 // Hardware setup
 const LED1 = new Gpio(LED_PIN_1, 'out');
 LED1.writeSync(1);
 const LED2 = new Gpio(LED_PIN_2, 'out');
-const pushButton = new Gpio(PUSH_BUTTON_PIN, 'in', 'rising');
+const PUSH_BUTTON = new Gpio(PUSH_BUTTON_PIN, 'in', 'rising');
 const PIR = new Gpio(PIR_PIN, 'in', 'both');
-
-// Database setup
-const uri = process.env.DB_URI;
-
-const connectToDatabase = async () => {
-  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-  try {
-    await client.connect();
-    console.log('Connected to MongoDB');
-    return client;
-  } catch (error) {
-    console.error('Error connecting to MongoDB:', error);
-    throw error;
-  }
-};
-
-async function insertData(client, collectionName, data) {
-  const database = client.db('security-db');
-  const collection = database.collection(collectionName);
-
-  try {
-    const result = await collection.insertOne(data);
-    console.log('Data inserted:', result.insertedId);
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-// close the MongoDB client connection
-const closeDatabaseConnection = () => {
-  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-  client.close();
-  console.log('MongoDB client connection closed');
-};
+const BUZZER = new Gpio(BZR_PIN, 'out');
 
 // Email setup
 const transporter = nodemailer.createTransport({
@@ -110,7 +75,7 @@ const sendEmail = () => {
     from: process.env.FROM_EMAIL,
     to: process.env.TO_EMAIL,
     subject: 'Motion Detected',
-    text: `Motion has been detected at ${new Date().toLocaleString()}\n check the website at: https://localhost:3001/`
+    text: `Motion has been detected at ${new Date().toLocaleString()}\n check the website at: ...`
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
@@ -122,27 +87,22 @@ const sendEmail = () => {
   });
 };
 
-// Logs to the DB
-const logDetection = async () => {
-  let collectionName = 'log';
-  let log = { "time": new Date().toLocaleString() };
-  const client = await connectToDatabase();
-  await insertData(client, collectionName, log);
-  closeDatabaseConnection();
-};
-
-const logActivation = async () => {
-  const client = await connectToDatabase();
-  let collectionName = 'user-actions';
-  let log = {
-    username: "Pi button",
-    action: detectionState.getDetectionState() ? "Activated detection": "Deactivated detection",
-    time: new Date().toLocaleString(),
-    ip: "Pi button"
+// Sound the buzzer for 1 second
+const soundBuzzer = () => {
+  let count = 0;
+  const playBuzzer = () => {
+    if (count < 5) {
+      BUZZER.writeSync(1);
+      setTimeout(() => {
+        BUZZER.writeSync(0);
+        count++;
+        setTimeout(playBuzzer, 1000);
+      }, 1000);
+    } else {
+      BUZZER.unexport();
+    }
   };
-
-  await insertData(client, collectionName, log);
-  closeDatabaseConnection();
+  playBuzzer();
 };
 
 // Toggles the light and sensor
@@ -176,7 +136,7 @@ const toggleLight = () => {
   }
 };
 
-// Handles a message from the frontend
+// Handles socket
 socket.on('connect', () => {
   console.log('Connected to Express app via Socket.IO');
   
@@ -197,18 +157,17 @@ socket.on('connect', () => {
 });
 
 // Handles a message from the breadboard button
-pushButton.watch((err, value) => {
+PUSH_BUTTON.watch((err, value) => {
   if (err) {
-    console.error('Error with pushButton.watch:', err);
+    console.error('Error with PUSH_BUTTON.watch:', err);
     return;
   }
   toggleLight();
   if (detectionState.getDetectionState()) {
     socket.emit('pi-activated', { message: 'Raspberry Pi button activated', value: true });
   } else {
-    socket.emit('pi-activated', { message: 'Raspberry Pi button deactivated', value: false});
+    socket.emit('pi-activated', { message: 'Raspberry Pi button deactivated', value: false });
   }
-  logActivation();
 });
 
 // Sensor code
@@ -219,11 +178,11 @@ PIR.watch((err, value) => { // 'value' is from the sensor. 0 == no movement, 1 =
   }
   if (detectionState.getSensorEnabledState() && value === 1) {
     console.log('Motion detected!');
-    logDetection();
-    // sendEmail();
+    socket.emit('detection');
+    sendEmail();
+    soundBuzzer();
   }
 });
-
 
 // Start the server
 server.listen(process.env.PORT, () => {

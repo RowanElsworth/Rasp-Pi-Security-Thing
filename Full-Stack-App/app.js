@@ -24,8 +24,8 @@ app.use((req, res, next) => {
 // Set up ejs template viewer
 app.set('view engine', 'ejs');
 
-// Express app
-app.use(express.static(__dirname + '/public', { maxAge: 0, etag: false, lastModified: false, cacheControl: false }));
+// Serves static files (CSS, JS, Images, Videos)
+app.use(express.static(__dirname + '/public', { maxAge: 0, etag: false, lastModified: false, cacheControl: false })); // The cache statements are for development to remove web caching so changes will actually show
 
 // Use body-parser middleware
 app.use(bodyParser.json());
@@ -52,7 +52,7 @@ function isAuthenticated(req, res, next) {
 
 // apply the isAuthenticated middleware to all routes except the login route
 app.use((req, res, next) => {
-  if (req.path === '/login') {
+  if (req.path === '/login' || req.path === '/') {
     // don't apply the middleware to the login route
     next();
   } else {
@@ -68,27 +68,26 @@ const User = mongoose.model('User', new mongoose.Schema({
 
 // handle login post request
 app.post('/login', async (req, res) => {
-  // connect to the database
   await connectDB('Login post request');
-
   // find a user with the provided username
   const user = await User.findOne({ username: req.body.username });
-
   // check if a user was found
   if (user) {
     // compare the hashed password in the database with the provided password
     const match = await bcrypt.compare(req.body.password, user.password);
-    if (match) {
+    if (match) { // Corect credentials
       req.session.user = user;
       await disconnectDB('Login post request');
       res.redirect('/logs');
-    } else {
+    } else { // Wrong password
       await disconnectDB('Login post request');
-      res.status(401).send('Invalid credentials');
+      const error = 'Invalid credentials';
+      res.render('login', { error: error });
     }
-  } else {
+  } else { // If no user found in the database
     await disconnectDB('Login post request');
-    res.status(401).send('Invalid credentials');
+    const error = 'Invalid credentials';
+    res.render('login', { error: error });
   }
 });
 
@@ -102,10 +101,9 @@ app.get('/logout', (req, res) => {
   });
 });
 
-
 // Logs to frontend
 const logSchema = new mongoose.Schema({
-  time: Date
+  time: String
 }, { collection: 'log' });
 
 const Log = mongoose.model('Log', logSchema);
@@ -126,7 +124,7 @@ app.get('/log', async (req, res) => {
 const userLogSchema = new mongoose.Schema({
   username: String,
   action: String,
-  time: Date,
+  time: String,
   ip: String
 }, { collection: 'user-actions' });
 
@@ -136,7 +134,7 @@ app.get('/user-actions', async (req, res) => {
   await connectDB('Get user logs request');
   try {
     const userLog = await UserLog.find().exec();
-    await disconnectDB('Get logs request');
+    await disconnectDB('Get user logs request');
     res.json(userLog);
   } catch (error) {
     console.error('Error retrieving log data', error);
@@ -145,18 +143,25 @@ app.get('/user-actions', async (req, res) => {
   }
 });
 
-app.get('/user-actions', async (req, res) => {
-  await connectDB('Get user logs request');
+app.post('/user-actions', async (req, res) => {
+  await connectDB('Post user log');
+  const userLog = new UserLog({
+    username: res.locals.username,
+    action: req.body.action,
+    time: new Date().toLocaleString(),
+    ip: req.ip
+  });
   try {
-    const userLog = await UserLog.find().exec();
-    await disconnectDB('Get user logs request');
-    res.json(userLog);
+    await userLog.save();
+    await disconnectDB('Post user log');
+    res.sendStatus(200);
   } catch (error) {
-    console.error('Error retrieving log data', error);
-    await disconnectDB('Get user logs request');
-    res.status(500).send('Error retrieving log data');
+    console.error('Error saving user log', error);
+    await disconnectDB('Post user log');
+    res.status(500).send('Error saving user log');
   }
 });
+
 
 app.get('/users', async (req, res) => {
   await connectDB('Get users request');
@@ -238,7 +243,7 @@ app.post('/current-state-req', (req, res) => {
 io.on('connection', (socket) => {
   socket.on('ready', (data) => {
     console.log(data.message);
-    console.log(data.state);
+    console.log(`current state: ${data.state}`);
   });
 
   socket.on('current-state-push', (data) => {
@@ -246,9 +251,34 @@ io.on('connection', (socket) => {
     io.emit('current-state-front', data.state);
   });
 
-  socket.on('pi-activated', (data) => {
+  socket.on('pi-activated', async (data) => {
     console.log(data.message);
     io.emit('pi-activated-front', data);
+    // Add to the user action table
+    await connectDB('Post user log from Pi');
+    const log = new UserLog({
+      username: "Pi button",
+      action: data.value ? "Activated detection": "Deactivated detection",
+      time: new Date().toLocaleString(),
+      ip: "Pi button"
+    });
+    try {
+      await log.save();
+      await disconnectDB('Post user log from Pi');
+    } catch (error) {
+      console.error('Error saving detection log', error);
+    }
+  });
+
+  socket.on('detection', async () => {
+    await connectDB('Post detection log');
+    const log = new Log({ time: new Date().toLocaleString() });
+    try {
+      await log.save();
+      await disconnectDB('Post detection log');
+    } catch (error) {
+      console.error('Error saving detection log', error);
+    }
   });
 
   socket.on('disconnect', () => {
@@ -257,6 +287,10 @@ io.on('connection', (socket) => {
 });
 
 // Pages
+app.get('/', async (req, res) => {
+  res.render(__dirname + '/views/home.ejs');
+});
+
 app.get('/login', async (req, res) => {
   res.render(__dirname + '/views/login.ejs');
 });
@@ -276,7 +310,7 @@ app.get('/settings', async (req, res) => {
 // Start the server
 connectDB('Starting the server')
   .then(() => {
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       disconnectDB('Starting the server');
       console.log(`Server is hosted at http://localhost:${process.env.PORT}/`);
     });

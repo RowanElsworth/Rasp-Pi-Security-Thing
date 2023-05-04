@@ -1,0 +1,355 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+
+html {
+  font-family: 'Nunito', sans-ser2;
+  color: var(--dark-blue);
+  scroll-behavior: smooth;
+}
+
+:root {
+  --blue: #0074D9;
+  --light-blue: #7FDBFF;
+  --dark-blue: #001F3F;
+  --green: #2ECC40;
+  --bg-light: #F7FAFF;
+}
+
+header {
+  width: 100%;
+  height: 10rem;
+  padding: 1rem 35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: absolute;
+  z-index: 3;
+}
+
+.logo {
+  max-height: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.logo img {
+  width: 100%;
+  height: 100%;
+}
+
+.login {
+  padding: 0.7rem 3rem;
+  background: rgba(250, 250, 250, 0.5);
+  font-size: 3.1rem;
+  border-radius: 5rem;
+  color: var(--dark-blue);
+  text-decoration: none;
+  transition: all 1.1s ease-out;
+}
+
+.login:hover,
+.login:focus {
+  background: rgb(250, 250, 250);
+}
+
+#hero {
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(135deg, rgba(127,219,255,1) 35%, rgba(78,156,223,1) 100%);
+  border-bottom: 2px solid black;
+  padding: 16rem 35rem 0 35rem;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+#hero::after {
+  content: url('/assets/S1 Triangles.png');
+  position: absolute;
+  top: -55%;
+  right: -35%;
+  z-index: 1;
+  width: 100%;
+}
+
+.hero-left {
+  position: relative;
+  z-index: 2;
+  width: 50%;
+  height: 60%;
+  margin-top: 8rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hero-left h1 {
+  font-size: 6rem;
+  font-weight: 700;
+  line-height: 7.5rem;
+}
+
+.hero-left h2 {
+  font-size: 2.2rem;
+  font-weight: 600;
+}
+
+.explore {
+  width: 55%;
+  padding: 0.7rem 0;
+  text-align: center;
+  background: rgba(250, 250, 250, 0.5);
+  font-size: 3.1rem;
+  border-radius: 5rem;
+  color: var(--dark-blue);
+  text-decoration: none;
+  transition: all 1.1s ease-out;
+}
+
+.explore:hover,
+.explore:focus {
+  background: rgb(250, 250, 250);
+}
+
+.hero-right {
+  position: absolute;
+  z-index: 2;
+  right: -25%;
+  height: 100%;
+}
+
+.phone-outer {
+  aspect-ratio: 1 / 2;
+  width: 25%;
+  background: #F2F2F2;
+  position: absolute;
+  top: 12rem;
+  left: -8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2.5rem;
+  box-shadow: -1px 0px 10px 2px rgba(0,0,0,0.25);
+}
+
+.phone-inner {
+  width: 94.5%;
+  height: 96.5%;
+  background: #FFFFFF;
+  border-radius: 2rem;
+}
+
+.phone-inner img {
+  width: 100%;
+  height: 100%;
+  border-radius: 2rem;
+  box-shadow: -1px 0px 5px 1px rgba(0,0,0,0.25);
+}
+
+#features {
+  background: var(--bg-light);
+  padding: 3rem 20rem 7.5rem 20rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12rem;
+  position: relative;
+}
+
+#features::before {
+  content: '';
+  position: absolute;
+  bottom: -15rem;
+  right: 0;
+  width: 100%;
+  height: 15rem;
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  background: var(--bg-light);
+}
+
+.top-text {
+  width: 50%;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.top-text img {
+  width: 15%;
+}
+
+.top-text h2 {
+  font-size: 3.8rem;
+  font-weight: 800;
+}
+
+.top-text p {
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.card {
+  width: 100%;
+  height: 470px;
+  display: flex;
+  align-items: center;
+  gap: 6rem;
+  position: relative;
+  z-index: 2;
+}
+
+.card > * {
+  flex: 1;
+}
+
+.card-img {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(134,132,255,1) 0%, rgba(255,123,123,1) 100%);
+  rotate: 5deg;
+  border-radius: 1rem;
+  box-shadow: inset 0 1px 1px 0 hsla(0,0%,100%,.15),0 50px 100px -20px rgba(50,50,93,.3),0 30px 60px -30px rgba(0,0,0,.5),-10px 10px 60px -10px rgba(103,178,111,.3);
+}
+
+.image-bg {
+  width: 100%;
+  height: 100%;
+  background: #D9D9D9;
+  rotate: -5deg;
+  border-radius: 1rem;
+  transition: all 0.4s;
+}
+
+.image-content {
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+}
+
+.image-content img, .image-content video {
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+}
+
+.card-one .image-bg:hover, .card-three .image-bg:hover {
+  transform: perspective(800px) rotateY(4deg);
+}
+
+.card-two .image-bg:hover {
+  transform: perspective(800px) rotateY(-4deg);
+}
+.card-text {
+  height: 70%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.card-text div p {
+  font-size: 1.8rem;
+  letter-spacing: 4px;
+}
+
+.card-text h3 {
+  font-size: 3.8rem;
+}
+
+.card-text > p:nth-of-type(1), .card-text > p:nth-of-type(2) {
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+#pricing {
+  padding: 8rem 20rem 0 20rem;
+  position: relative;
+}
+
+#pricing h2 {
+  font-size: 3.8rem;
+}
+
+#pricing p {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 2rem;
+}
+
+.boxes {
+  height: 275px;
+  margin-top: 12rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.box {
+  width: 30%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--dark-blue);
+  color: white;
+  position: relative;
+  border-radius: 4rem;
+}
+
+.icon-container {
+  width: 30%;
+  aspect-ratio: 1 / 1;
+  background: white;
+  position: absolute;
+  top: -25%;
+  border-radius: 50%;
+  outline: 2px solid black;
+  outline-offset: -5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon img {
+  width: 65%;
+  height: auto;
+}
+
+.box div:nth-of-type(2) {
+  height: 100%;
+  padding-top: 6.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.box h3 {
+  font-size: 2.4rem;
+}
+
+.box li {
+  font-size: 1.8rem;
+}
+
+.box p {
+  font-size: 2.4rem;
+}
+
+footer {
+  width: 100%;
+  height: 200px;
+  background: var(--dark-blue);
+  margin-top: 1rem;
+  position: relative;
+  z-index: 2;
+}

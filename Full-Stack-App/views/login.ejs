@@ -24,9 +24,12 @@
           <input type="password" name="password">
         </div>
         <button type="submit">Login</button>
+        <% if (typeof error !== 'undefined') { %>
+          <p><%= error %></p>
+        <% } %>
       </form>
     </div>
-    <a href="/home">Contact?</a>
+    <a href="/">Home Page</a>
   </div>
   <div class="content">
     <h1>Welcome to the Amazingly Sensational Security Breach and Egregious Emergency Protocol Service portal!</h1>
