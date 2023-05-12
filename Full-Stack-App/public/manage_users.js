@@ -61,7 +61,7 @@ $(document).ready(function() {
       },
       error: function(error) {
         console.error('Error fetching user data:', error);
-        alert('An error occurred while fetching user data.');
+        alert('An error occurred while fetching user data.', error);
       }
     });
   }
@@ -84,7 +84,7 @@ $(document).ready(function() {
 
   // Add User button event listener
   $('#add-user-button').on('click', function() {
-    $('.popup').css('display', 'block');
+    $('.popup').css('display', 'flex');
   });
 
   // Close button event listener
@@ -106,7 +106,7 @@ $(document).ready(function() {
         password: password
       },
       success: function(response) {
-        updateUserList();
+        location.reload()
         
         $('#add-user-popup').css('display', 'none');
         var action = {

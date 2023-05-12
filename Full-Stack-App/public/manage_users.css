@@ -76,15 +76,17 @@ table {
   height: 100%;
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.4);
+  align-items: center;
+  justify-content: center;
 }
 
 .popup-content {
   background-color: #fefefe;
-  margin: 15% auto;
-  padding: 20px;
   border: 1px solid #888;
-  width: 80%;
-  max-width: 400px;
+  border-radius: 2rem;
+  padding: 1rem;
+  width: 25%;
+  height: 20%;
 }
 
 .close {
@@ -92,6 +94,7 @@ table {
   float: right;
   font-size: 28px;
   font-weight: bold;
+  transition: 0.1s linear;
 }
 
 .close:hover,
@@ -99,4 +102,26 @@ table {
   color: #000;
   text-decoration: none;
   cursor: pointer;
+}
+
+.popup-content h2 {
+  font-size: 2.2rem;
+  text-align: center;
+}
+
+form {
+  height: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+form div label, form div input {
+  font-size: 1.8rem;
+}
+
+form div button {
+  padding: 0.25rem 1rem;
 }
